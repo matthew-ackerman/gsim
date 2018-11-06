@@ -41,7 +41,8 @@ Variants themselves are not random, but occur at different rates depending on th
 * MAKES: INDIVIDUAL FASTAS
 * TODO: ADD CONTEXT MODIFIRES
 
-### Sequencing simulation: Sequencers do not just make random errors when sequencing DNA. Luckily many programs have been developed to simulate sequencing, and we can just make use of the programs that already exist.
+### Sequencing simulation
+Sequencers do not just make random errors when sequencing DNA. Luckily many programs have been developed to simulate sequencing, and we can just make use of the programs that already exist.
 * NEEDS: INDIVIDUAL FASTAS, REFERENCE
 * MAKES: BAMFILES
 * STATUS: DONE
