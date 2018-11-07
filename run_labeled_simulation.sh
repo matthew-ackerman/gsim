@@ -2,13 +2,16 @@
 
 source settings.sh
 
+PED_SIM=`readlink -f ./pedigree_simulation/pedigree_sim`
+
 echo "simulating population"
 cd sequences
 #../population_simulation/pedigree_sim $POPULATION $TIME $SNPS 0.002 0.002 s b 1 0.5 2> var | cut -d '	' -f 1-$((2*SAMPLE+1)) > states.txt
 
 echo $SAMPLE
 echo $POPULATION
-../pedigree_simulation/pedigree_sim -y $STRUCTURE -f $F -N $POPULATION -1 $SAMPLE -s 50 -g $TIME -plnGt -k $TIME -v $V -e 0.005 -t > states.txt 
+
+$PED_SIM -y $STRUCTURE -f $F -N $POPULATION -1 $SAMPLE -s 50 -g $TIME -plnGt -k $TIME -v $V -e 0.005 -t > states.txt 
 
 #../population_simulation/pedigree_sim $POPULATION $TIME $SNPS 50 0.01 g t 2> var | cut -d '	' -f 1$SAMPLE_CHRM > states.txt
 

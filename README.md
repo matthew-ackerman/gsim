@@ -53,6 +53,12 @@ Sequencers do not just make random errors when sequencing DNA. Luckily many prog
 * MAKES: BAMFILES
 * STATUS: DONE
 
+### Alignment
+Alignment is done by the script run\_alignment.sh in the director alignment. This script should accept four arguments in the following order: the sequence to align reads to (typically should be the variable ASSEMBLY), the prefix of the individuals aligned sequences (the aligner then tries to align files PREFIX.1.fq and PREFIX.2.fq), the prefix of the output file, and the ID of the read group of the reads to be aligned. 
+
+### Assembly
+Various strategies exist for producing an assembly that often depend on having reads from multiple technologies. Currently my simulations only use short reads from the individual 000 in the simulated population during the assembly process, so the resulting assembly may be substantially lower quality than assemblies for many real organisms. This process is done by run\_assembly.sh.
+
 ### Analysis pipelines:
 Labeled frequency calling
 * Run simulations with the file:	
