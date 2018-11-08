@@ -1,0 +1,80 @@
+blockwise_inv <- function(M)
+{
+	n <- dim(M)[1]
+	n <- dim(M)[2]
+	h <- n/2.
+
+	A <- matrix( M[1:h,1:h], nrow=h, ncol=h)
+	B <- matrix( M[1:h,(1+h):n], nrow=h, ncol=h)
+	C <- matrix( M[(1+h):n, 1:h], nrow=h, ncol=h)
+	D <- matrix( M[(1+h):n, (1+h):n], nrow=h, ncol=h)
+
+	Ai <- ginv(A)
+	#
+	#Qi <- solve(D-C %*% Ai %*% B )
+	Qi <- ginv(D-C %*% Ai %*% B )
+
+	UL <-  Ai + Ai %*% B %*% Qi %*% C %*% Ai
+	UR <- -Ai %*% B %*% Qi
+	LL <- -Qi %*% C %*% Ai 
+	LR <-  Qi
+	
+	gM<-cbind(rbind(UL, LL), rbind(UR, LR) )
+}
+
+columnwise_ginv <- function (M)
+{
+	n<-dim(M)[1]
+	n<-dim(M)[2]
+	h<-n/2.
+
+	A<-matrix( M[1:n, 1:h],  nrow=n, ncol=h)
+	B<-matrix( M[1:n, (h+1):n],  nrow=n, ncol=h)
+	
+	I<-diag(n)
+
+	PwA<-I-A %*% solve( t(A) %*% A ) %*% t(A)
+	PwB<-I-B %*% solve( t(B) %*% B ) %*% t(B)
+
+	Ai<-ginv(PwA %*% B)
+	Bi<-ginv(PwB %*% A)
+}
+
+drop <- function (M, x)
+{
+	n <- dim(M)[1]
+	n <- dim(M)[2]
+	h <- n/2.
+
+#	P<-diag(n)
+#	C<-P[sample(nrow(P)),]
+#	M<-C %*% M %*% t(C)
+#	x<-C %*% x
+#	Z<-matrix( rep(0, h^2), ncol=h,nrow=h)
+
+	A <- matrix( M[1:h,1:h], nrow=h, ncol=h)
+	B <- matrix( M[1:h,(1+h):n], nrow=h, ncol=h)
+	C <- matrix( M[(1+h):n, 1:h], nrow=h, ncol=h)
+	D <- matrix( M[(1+h):n, (1+h):n], nrow=h, ncol=h)
+
+	Ai <- ginv(A)
+	#
+	#Qi <- solve(D-C %*% Ai %*% B )
+	Qi <- ginv(D-C %*% Ai %*% B )
+
+	UL <-  Ai + Ai %*% B %*% Qi %*% C %*% Ai
+	UR <- -Ai %*% B %*% Qi
+	LL <- -Qi %*% C %*% Ai 
+	LR <-  Qi
+	
+	gM <-cbind(rbind(UL, LL), rbind(UR, LR) )
+#	gM2<-cbind(rbind(ginv(A), Z), rbind(Z, ginv(D) ) )
+	gM2<-cbind(rbind(UL,  Z), rbind( Z, LR ) )
+	gM3<-cbind(rbind(Z, LL), rbind(UR, Z) )
+	
+	ret<-matrix( c(0,0,0), nrow=3, ncol=1)
+	ret[1,1]<- t(x) %*% gM %*% x
+	ret[2,1]<- t(x) %*% gM2 %*% x
+	ret[3,1]<- t(x) %*% gM3 %*% x
+	ret
+}

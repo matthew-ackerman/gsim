@@ -27,7 +27,7 @@
 #include "unsupported/Eigen/MatrixFunctions"
 
 #define REC		//Define if you want linkage between sites, leave undefined for free recombination. 
-#define MUT		//Define if you want to introduce mutation each generation.
+//#define MUT		//Define if you want to introduce mutation each generation.
 
 #define CHECK_FIXED
 
@@ -1215,6 +1215,56 @@ set_beta(const Trait &traits, State &sites, Individual *ind, uint32_t *mask2, st
 	delete P1;
 	delete P2;
 }
+
+
+
+void
+print_f_stat(State &sites, std::ostream &out)
+{
+	const uint32_t MASK[LOCI]={0x00000001,	0x00000002,	0x00000004,	0x00000008,
+					0x00000010,	0x00000020,	0x00000040,	0x00000080,
+					0x00000100,	0x00000200,	0x00000400, 	0x00000800,	
+					0x00001000, 	0x00002000, 	0x00004000, 	0x00008000,
+					0x00010000,	0x00020000,	0x00040000,	0x00080000,
+					0x00100000,	0x00200000,	0x00400000,	0x00800000,
+					0x01000000,	0x02000000,	0x04000000, 	0x08000000,	
+					0x10000000, 	0x20000000, 	0x40000000, 	0x80000000};
+
+	out << "@NAME:FSTAT	VERSION:TYPED	FORMAT:TEXT\n";
+	out << "@POS\tVR_FREQ\tF_STAT\n";
+
+	uint32_t *P[2];
+	uint32_t *P1=new uint32_t [sites.sample_size()];
+	uint32_t *P2=new uint32_t [sites.sample_size()];
+
+	P[0]=P1;
+	P[1]=P2;
+
+	sites.cache();
+	sites.rewind();
+
+	size_t cached_sites=sites.genome_size();
+
+	for (size_t y=0; y<cached_sites; y++){
+		/* TODO Fix.*/
+		sites.uncompress(P1, P2);
+		for (size_t z=0; z<WORD; z++){
+
+			const uint32_t mask=MASK[z];
+
+			const long double p=get_freq(P, sites.sample_size(), z);  
+			const long double q=1.-p;
+			const long double D=2.*p*q-get_h(P, sites.sample_size(), z);  
+			if (p>0) out << y*WORD+z << '\t' << p << '\t' << D << "\n";
+		}
+	}
+	out << "@END_TABLE\n";
+	sites.rewind();
+	delete P1;
+	delete P2;
+}
+
+
 /*print_cov is bad?*/
 void 
 print_cov(const Trait &traits, State &sites, uint32_t *mask2, std::ostream &out) 
@@ -1578,7 +1628,7 @@ main(int argc, char *argv[] )
 	int mode=0;
 
 	bool binary=false, p_pedigree=false, p_names=false, p_traits=false, p_traits2=false, p_geography=false, p_dist=false, p_header=false, p_matrix2=false, p_matrix=false, noselect=false, noprint=false;
-	bool p_stats=false;
+	bool p_stats=false, p_fstat=false;
 
 	int N=1200, T=0, t=10, k=500, n_trait=50, skip=100, sub_sample_size=-1;
 
@@ -1656,6 +1706,7 @@ main(int argc, char *argv[] )
 	env.flag(	'o',"off", &noprint,	&flag_set, 	"an error occurred while displaying the version message", "don't print state file.");		//DONE
 	env.flag(	't',"traits", &p_traits,	&flag_set, 	"an error occurred while displaying the version message", "prints the trait values every generation in files called t[GENERATION].txt");		//DONE
 	env.flag(	'u',"traits2", &p_traits2,	&flag_set, 	"an error occurred while displaying the version message", "prints the trait values every generation in files called t[GENERATION].txt");		//DONE
+	env.flag(	'F',"traits2", &p_fstat,	&flag_set, 	"an error occurred while displaying the version message", "prints the trait values every generation in files called t[GENERATION].txt");		//DONE
 	env.flag(	'w',"window", &p_stats,	&flag_set, 	"an error occurred while displaying the version message", "print stats file.");		//DONE
 
 	if ( parsargs(argc, argv, env) != 0 ) print_usage(env);
@@ -2065,6 +2116,15 @@ main(int argc, char *argv[] )
 		cov_file.open("cov2.txt", std::fstream::out);
 		print_cov2(trait, Pstates, mask, cov_file);
 		cov_file.close();
+	}
+	
+	if(p_fstat)
+	{
+		std::cerr << __LINE__ << std::endl;
+		std::fstream fstat_file;
+		fstat_file.open("fstat.txt", std::fstream::out);
+		print_f_stat(Pstates, fstat_file);
+		fstat_file.close();
 	}
 
 	if (!noprint) 

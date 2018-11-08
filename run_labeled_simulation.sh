@@ -6,14 +6,11 @@ PED_SIM=`readlink -f ./pedigree_simulation/pedigree_sim`
 
 echo "simulating population"
 cd sequences
-#../population_simulation/pedigree_sim $POPULATION $TIME $SNPS 0.002 0.002 s b 1 0.5 2> var | cut -d '	' -f 1-$((2*SAMPLE+1)) > states.txt
 
 echo $SAMPLE
 echo $POPULATION
 
-$PED_SIM -y $STRUCTURE -f $F -N $POPULATION -1 $SAMPLE -s 50 -g $TIME -plnGt -k $TIME -v $V -e 0.005 -t > states.txt 
-
-#../population_simulation/pedigree_sim $POPULATION $TIME $SNPS 50 0.01 g t 2> var | cut -d '	' -f 1$SAMPLE_CHRM > states.txt
+$PED_SIM -y $STRUCTURE -f $F -N $POPULATION -1 $SAMPLE -s $SNPS -g $TIME -plnGt -k $TIME -v $VAR -e 0.005 -t > states.txt 
 
 head -2 name-file.txt > temp-file.txt
 head -3 name-file.txt | tail -n 1 | cut -d '	' -f 1$SAMPLE_NAME >> temp-file.txt
@@ -125,12 +122,12 @@ python get_frequencies.py ../sequences/states.txt ../sequences/polymorphisms.map
 python get_ld.py ../sequences/states.txt ../sequences/polymorphisms.map $LD_DIST > ../analysis_files/true_ld.csv
 gzip ../sequences/states.txt
 
-Rscript Ackerman2017/make_figure_1a.rscript	#Bias RMSE of allele frequenceis
+Rscript Ackerman2017/make_figure_1a.rscript	#Bias RMSE of allele frequencies
 Rscript Ackerman2017/make_figure_1c.rscript	#Bias RMSE of inbreeding
 Rscript Ackerman2017/make_figure_1d.rscript	#Bias RMSE of LD.
 Rscript Ackerman2017/make_figure_1e.rscript	#ROC.
 
-./mapgd_benchmark.sh $ASSEMBLY > ../analysis_files/benchmark.csv
-./bcftools_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
-./angsd_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
-./gatk_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
+#./mapgd_benchmark.sh $ASSEMBLY > ../analysis_files/benchmark.csv
+#./bcftools_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
+#./angsd_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
+#./gatk_benchmark.sh $ASSEMBLY >> ../analysis_files/benchmark.csv
