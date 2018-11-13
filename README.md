@@ -1,4 +1,4 @@
-This is all being slowly pullout from the repository I left over at https://LynchLab/genomic\_simulations/ and may not be working yet. Everything should work over at the original, but it may not be well documented.
+This is all being slowly pullout from the repository I left over at https://LynchLab/genomic_simulations/ and may not be working yet. Everything should work over at the original, but it may not be well documented.
 
 Some of the steps in this simulation pile can generate large amounts of data. Particularly you should make sure that the sequences directory has enough room to store at least a few GB of data (depending on the simulation settings).
 
