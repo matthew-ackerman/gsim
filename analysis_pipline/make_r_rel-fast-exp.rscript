@@ -1,0 +1,155 @@
+make_K <- function(n, d){
+	return (cbind(diag(rep(1,n) )[ , c( (d+1):n)], diag(rep(1, n) )[ , c(1:d)]))
+}
+
+join <- function(matricies){
+	nmatrix<-length(matricies)
+	rnm<-sqrt(nmatrix)
+	msize<-nrow(matricies[[1]])
+	fsize<-rnm*msize
+	q<-msize*nmatrix
+	ret<-matrix( c(rep(0, q) ), ncol=fsize, nrow=fsize) 
+	col<-0
+	row<-0
+	message(rnm)
+	for (X in 0:(rnm-1))
+	{
+		for (Y in 0:(rnm-1))
+		{
+			m<-matricies[[X*rnm+Y+1]]
+			for (x in 1:msize)
+			{
+				for (y in 1:msize)
+				{
+					ret[X*msize+x,Y*msize+y]<-m[x,y]
+				}
+			}
+			message(X*rnm+Y)
+		}
+	}
+	return(ret) 
+}
+
+get_comps<-function(A, sA, D, sD, G, sG, d, sid, z){
+	N<-ncol(A)
+	I<-diag(N)
+
+	V<-join(list(I+sA*solve(A), I, I+sG*solve(G), I, I+sD*solve(D), I, I+sG*solve(G), I, I+sid*solve(d) ) )
+	Z<-matrix(c(z, z, z), ncol=1, nrow=3*N)
+	sol<-solve(V) %*% Z
+	a_hat<-sol[1:N]
+	d_hat<-sol[(N+1):(N*2)]
+	i_hat<-sol[(N*2+1):(N*3)]
+	return(list(a_hat, d_hat, i_hat) )
+}
+
+strs <- readLines(gzfile("../analysis_files/true_relatedness.out.gz"))
+#strs <- readLines("../analysis_files/mapgd_relatedness.out")
+mapgd<-head(read.csv(text=strs, skip=2, nrows=length(strs) - 3, header=FALSE, sep ='	'), -1)
+
+
+pheno<-read.csv("../analysis_files/plink_1.0.0.pheno", sep="	", header=FALSE)
+N<-length(pheno$V3)
+
+z<-matrix(pheno$V3, ncol=1, nrow=N)
+
+
+A<-matrix(nrow=N,ncol=N)
+G<-matrix(nrow=N,ncol=N)
+d<-matrix(nrow=N,ncol=N)
+D<-matrix(nrow=N,ncol=N)
+F<-matrix(nrow=N,ncol=N)
+f<-matrix(nrow=N,ncol=1)
+
+for (i in 1:(length(mapgd$V1)))
+{
+	x<-mapgd[i,]
+	A[x$V1+1, x$V2+1]<-x$V7
+	A[x$V2+1, x$V1+1]<-x$V7
+	A[x$V1+1, x$V1+1]<-(1+x$V3)/2.
+	A[x$V2+1, x$V2+1]<-(1+x$V5)/2.
+
+	d[x$V1+1, x$V2+1]<-x$V13
+	d[x$V2+1, x$V1+1]<-x$V13
+	d[x$V1+1, x$V1+1]<-x$V3
+	d[x$V2+1, x$V2+1]<-x$V5
+
+	G[x$V1+1, x$V2+1]<-x$V11+x$V13
+	G[x$V2+1, x$V1+1]<-x$V13+x$V11
+	G[x$V1+1, x$V1+1]<-x$V3
+	G[x$V2+1, x$V2+1]<-x$V5
+
+	F[x$V1+1, x$V2+1]<-x$V3
+	F[x$V2+1, x$V1+1]<-x$V5
+	F[x$V1+1, x$V1+1]<-NA
+	F[x$V2+1, x$V2+1]<-NA
+}
+
+for (i in 1:N) 
+{
+	f[i]<-mean(F[i,], na.rm=TRUE)
+}
+
+fm=mean(f)
+
+for (i in 1:(length(mapgd$V1)+1))
+{
+	x<-mapgd[i,]
+	D[x$V1+1, x$V2+1]<-x$V15 + fm *(fm - f[x$V1+1] - f[x$V2+1])
+	D[x$V2+1, x$V1+1]<-x$V15 + fm *(fm - f[x$V1+1] - f[x$V2+1]) 
+	D[x$V1+1, x$V1+1]<-1-f[x$V1+1]+fm*(fm-2*f[x$V1+1])
+	D[x$V2+1, x$V2+1]<-1-f[x$V2+1]+fm*(fm-2*f[x$V2+1])
+}
+
+uncentered_z<-z
+z<-z-mean(z)
+
+coef<-lm(z~f)$coef
+sf<-coef[1]
+zni<-z-sf*f
+zni<-zni-mean(zni)
+
+s<-z %*% t(z)
+
+sf<-zf %*% t(zf)
+sf_c<-zf_c %*% t(zf_c)
+
+us<-s
+uA<-A
+ud<-d
+uD<-D
+uG<-G
+uF<-F
+
+us[lower.tri(D, diag=TRUE)]<-NA
+uA[lower.tri(D, diag=TRUE)]<-NA
+ud[lower.tri(D, diag=TRUE)]<-NA
+uD[lower.tri(D, diag=TRUE)]<-NA
+uG[lower.tri(D, diag=TRUE)]<-NA
+
+us<-as.vector(us)
+uA<-as.vector(uA)
+ud<-as.vector(ud)
+uD<-as.vector(uD)
+uG<-as.vector(uG)
+
+coef<-lm(us~uA+ud+uD+uG+0)$coef
+#sd(z)
+#coef<-lm(us~uA+ud+uD+uG)$coef
+
+sA<-0.30#coef[1]
+sid<-0.67#coef[2]
+sD<-0.12#coef[3]
+sG<-0.08#coef[4]
+
+#A<-A*sA
+#d<-d*sid
+#D<-D*sD
+#G<-G*sG
+l<-get_comps(f, A, sA, D, sD, G, sG, d, sid, z)
+a_hat<-l[[1]]
+d_hat<-l[[2]]
+i_hat<-l[[3]]
+z_hat<-a_hat+d_hat+i_hat
+
+plot(z_hat, z)

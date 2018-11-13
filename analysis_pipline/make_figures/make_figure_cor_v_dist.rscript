@@ -1,0 +1,78 @@
+PYPATH<-"../python_utilities/"
+DATAFILE<-"../../analysis_files/mapgd_relatedness.out"
+GCTAFILE1<-"../../analysis_files/gcta.grm.gz"
+GCTAFILE2<-"../../analysis_files/gcta.d.grm.gz"
+PLINKFILE<-"../../analysis_files/plink.genome"
+
+KAPPAFILE<-"../../analysis_files/const.txt"
+
+source("figures.conf")
+
+t<-head(read.csv("../../analysis_files/cov.txt", sep="	", skip=1), -1) 
+
+a<-as.matrix(t[grepl("beta_[0123456789]*", names(t) ) ] )
+d<-as.matrix(t[grepl("delta_[0123456789]*", names(t) ) ] )
+
+alpha<-colSums(a)
+delta<-colSums(d)
+
+N<-length(alpha)
+n<-300
+DIM<-dim(a)[1]
+
+VA<-as.matrix(read.csv("../../analysis_files/A.csv", sep=",", header=FALSE) )
+VD<-as.matrix(read.csv("../../analysis_files/D.csv", sep=",", header=FALSE) )
+VG<-as.matrix(read.csv("../../analysis_files/G.csv", sep=",", header=FALSE) )
+
+Vd1<-as.matrix(read.csv("../../analysis_files/D2.csv", sep=",", header=FALSE) )
+Vd2<-as.matrix(read.csv("../../analysis_files/D4.csv", sep=",", header=FALSE) )
+F<-as.matrix(read.csv("../../analysis_files/F.csv", sep=",", header=FALSE) )
+
+gctaA<-as.matrix(read.csv("../../analysis_files/gctaA.csv", sep=",", header=FALSE) )
+gctaD<-as.matrix(read.csv("../../analysis_files/gctaD.csv", sep=",", header=FALSE) )
+plinkA<-as.matrix(read.csv("../../analysis_files/plinkA.csv", sep=",", header=FALSE) )
+
+true_a<-matrix(ncol=n, nrow=n)
+true_d<-matrix(ncol=n, nrow=n)
+true_g<-matrix(ncol=n, nrow=n)
+true_v<-matrix(ncol=n, nrow=n)
+
+true_dist<-matrix(ncol=n, nrow=n)
+
+cord<-head(read.csv("../../analysis_files/cord-file.txt", sep="	", skip=1), -1)
+
+φ<-cord$LONG-pi/2
+λ<-cord$LAT
+
+for(x in 1:n) {
+	for(y in x:n) {
+		true_a[x,y]<-cov(a[,x], a[,y])
+		true_a[y,x]<-true_a[x,y] 
+
+		true_d[x,y]<-cov(d[,x], d[,y])
+		true_d[y,x]<-true_d[x,y] 
+
+		true_g[x,y]<-cov(d[,x], a[,y])+cov(a[,x], d[,y])
+		true_g[y,x]<-cov(d[,y], a[,x])+cov(a[,y], d[,x])
+
+		true_v[x,y]<-cov(a[,x]+d[,x],a[,y]+d[,y] )
+		true_v[y,x]<-true_v[x,y]
+
+		Δφ = φ[x]-φ[y] 
+		Δλ = λ[x]-λ[y]
+
+		b = sin(Δφ/2)^2 + cos(φ[x]) * cos(φ[y]) * sin(Δλ/2)^2
+		c = 2 * atan2( sqrt(b), sqrt(1-b) )
+
+		true_dist[x,y]<- c
+		true_dist[y,x]<-true_dist[x,y]
+	}
+}
+
+
+true_a<-true_a/var(as.vector(a) )
+true_d<-true_d/var(as.vector(d) )
+true_g<-true_g/cov(as.vector(a), as.vector(d)  ) 
+true_v<-true_v/var(as.vector(a)+as.vector(d) )
+
+plot(as.vector(true_a),as.vector(true_dist) ) 

@@ -1,0 +1,36 @@
+rangemean<-function(X, Y, steps)
+{
+	min<-min(Y, na.rm=TRUE)
+	max<-max(Y, na.rm=TRUE)
+	range<-max-min
+	step_size<-range/steps
+	means<-matrix(0,ncol=3, nrow=steps)
+	rmeans<-matrix(0,ncol=3, nrow=steps)
+	xsize<-length(X)
+
+	for (y in 1:xsize) 
+	{
+		bin= floor( (Y[y]-min) / step_size)
+		means[bin,1]=means[bin,1]+X[y]
+		means[bin,2]=means[bin,2]+1
+		means[bin,3]=means[bin,3]+Y[y]
+	}
+#	for (x in 1:steps) {
+#		for (y in 1:xsize) {
+#			if (!is.na(Y[y]) ){
+#				if (!is.na(X[y]) ){
+#					if (Y[y]>=(min+step_size*(x-1) ) && Y[y]<=(min+step_size*x) )
+#					{
+#						means[x,1]=means[x,1]+X[y] 
+#						means[x,2]=means[x,2]+1
+#					}
+#				}
+#			}
+#		}
+#	}
+	for (x in 1:steps) {
+		rmeans[x,2]=means[x,1]/means[x,2] 
+		rmeans[x,1]=means[x,3]/means[x,2]
+	}
+	rmeans
+}

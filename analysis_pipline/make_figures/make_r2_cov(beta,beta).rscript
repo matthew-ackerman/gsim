@@ -1,0 +1,66 @@
+
+PYPATH<-"../python_utilities/"
+DATAFILE<-"../../analysis_files/mapgd_relatedness.out"
+PHENOFILE="../../analysis_files/t_final.txt"
+
+CALC<-TRUE
+
+t<-head(read.csv(PHENOFILE, sep="	", skip=1), -1) 
+
+N<-dim(t)[1]
+n<-N
+
+if(CALC)
+{
+	system(paste("cat ", DATAFILE, " | python-2.7.9 ", PYPATH, "make_A2.py ", N, " ", n, " > ../../analysis_files/A.csv", sep="" ) )
+	system(paste("cat ", DATAFILE, " | python-2.7.9 ", PYPATH, "make_D2.py ", N, " ", n, " > ../../analysis_files/D.csv", sep="" ) )
+	system(paste("cat ", DATAFILE, " | python-2.7.9 ", PYPATH, "make_G2.py ", N, " ", n, " > ../../analysis_files/G.csv", sep="" ) )
+}
+
+VA<-as.matrix(read.csv("../../analysis_files/A.csv", sep=",", header=FALSE) )
+VD<-as.matrix(read.csv("../../analysis_files/D.csv", sep=",", header=FALSE) )
+VG<-as.matrix(read.csv("../../analysis_files/G.csv", sep=",", header=FALSE) )
+
+VD<-VD[1:n, 1:n]
+VA<-VA[1:n, 1:n]
+VG<-VG[1:n, 1:n]
+
+library(regress)
+
+s<-c()
+H<-c()
+h<-c()
+names<-c()
+
+#drop 106,158
+
+A<-105
+B<-157
+
+for (x in 2)
+{
+	z<-t[1:n,x]
+	z<-z-mean(z)
+	z<-z/sd(as.vector(z) )
+	va<-VA
+	vd<-VD
+	vg<-VG
+	ztz<-(z %*% t(z) )
+#	ztz[lower.tri(ztz, diag=TRUE)] <- NA
+	coef<-summary(lm( as.vector( ztz )~as.vector(va)+as.vector(vd)+as.vector(vg)+as.vector(diag(n) ) ) )$coefficients 
+	s<-c(s, coef )
+	H<-c(H, coef[2]+coef[3]+coef[4])
+	h<-c(h, coef[2] )
+	names<-c(names,names(t)[x])
+}
+
+l<-matrix( rep(NA, 100*100), ncol=100, nrow=100)
+
+for (x in 1:100){
+	for (y in 1:(101-x) ) {
+		p<-x/101
+		q<-y/101
+		r<-1-p-q
+		l[x,101-y]<-dmvnorm(z,rep(0,n), p*VA+q*VD+r*I, log=TRUE)
+	}
+}
