@@ -56,7 +56,12 @@ def getld(line1, line2):
 		return ["NaN", "NaN", "NaN"]
 
 for thisline in state_file:
-	Ns=map(int, thisline.strip('\n').split('\t')[1:]) 
+	if thisline[0]=='@':
+		continue
+	Ns=[]
+	for x in thisline.strip('\n').split('\t'):
+		Ns.append(int(x[0]))
+		Ns.append(int(x[1]))
 	sums=[]
 	#genotype encoding 0=0|0 1=1|0 2=0|1 3=1|1
 	for x in range(0, len(Ns), 2):

@@ -28,22 +28,25 @@ os.system("echo \" PRAGMA synchronous=OFF;\" | sqlite3 poly.db")
 
 for line in state_file:
 	if line[0]!='@':
-		states.append( line[1:]  ) 
+		states.append( line[:]  ) 
 X=0
 inserts=[]
 for line in mutat_file:
-	state=states.pop(0)
+	state=states.pop(0).strip('\n').split('\t')
 	line=line.strip('\n')
 	if X==1000:
 		cur.executemany("INSERT INTO snps VALUES (?, ?);", inserts )
 		con.commit()
 		inserts=[]
 		X=0
+	print state, len(state), N
 	for n in range (0, N):
-		if state[n*4][0]=='1':
+		if state[n][0]=='1':
 			inserts.append([n*2+0, line])
-		if state[n*4+2][0]=='1':
+		if state[n][1]=='1':
 			inserts.append([n*2+1, line])
+		
+	
 	X=X+1
 cur.executemany("INSERT INTO snps VALUES (?, ?);", inserts )
 con.commit()

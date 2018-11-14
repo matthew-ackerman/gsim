@@ -27,7 +27,7 @@
 #include "unsupported/Eigen/MatrixFunctions"
 
 #define REC		//Define if you want linkage between sites, leave undefined for free recombination. 
-//#define MUT		//Define if you want to introduce mutation each generation.
+#define MUT		//Define if you want to introduce mutation each generation.
 
 #define CHECK_FIXED
 

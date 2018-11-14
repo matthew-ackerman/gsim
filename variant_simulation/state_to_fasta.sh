@@ -2,18 +2,15 @@ ref=$1
 states=$2
 #SIZE="`head -1 $states | grep '	' -o | wc -l`"
 SIZE=`head -2 ../sequences/states.txt | tail -n 1 | cut -d '	' -f 1 | cut -d ':' -f 2`
+SIZE=$(($SIZE*2))
 POLY=../sequences/polymorphisms.map
-POLYDB=../sequenes/poly.db
 REFSIZE=$((`tail -n +2 $1 | wc -c`-`tail -n +2 $1 | wc -l`))
 
-python mutation_simulation2.py -n $((`wc -l ../sequences/states.txt | cut -d ' ' -f 1` -3)) -l $REFSIZE -o True > ../seqeunces/temp
+python mutation_simulation2.py -n $((`wc -l ../sequences/states.txt | cut -d ' ' -f 1` -3)) -l $REFSIZE -o True > temp
+python mutation_sort.py temp > $POLY
 
-rm -f $POLYDB
-
-python mutation_sort.py temp $POLYDB > $POLY
-
-rm ../sequences/temp
-
+rm temp
+rm -f poly.db
 python state_to_fasta.py -N $((SIZE/2)) -s $states -m $POLY 
 
 for N in `seq 0 2 $((SIZE-2))` 
@@ -25,4 +22,4 @@ do
 	echo "SELECT var FROM snps WHERE sample=$((N+1));" | sqlite3 poly.db  | ./mutate -r $ref -n seq_$name | gzip - > ../sequences/seq_$name.1.fa.gz
 done
 
-rm -f $POLYDB
+rm -f poly.db

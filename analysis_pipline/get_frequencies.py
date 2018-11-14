@@ -4,16 +4,20 @@ var=[]
 fstat=[]
 state_file=open(sys.argv[1])
 var_file=open(sys.argv[2])
+
 for line in state_file:
+	if line[0]=='@':
+		continue
 	line=line.strip('\n').split('\t')
-	N=float(len(line)-1)
-	s=map(float, line[1:])
+	N=float(len(line))
+	s=[]
+	for x in line:
+		s.append(int(x[0]) )
+		s.append(int(x[1]) )
 	p=(sum(s)/N )
 	H=0
 	for x in range(0, int(N), 2):
 		H+=int(s[x]!=s[x+1])
-#		print s[x], s[x+1], "|", 
-#	print H
 	H/=(N/2.)
 	q=1-p
 	freq.append(p)
