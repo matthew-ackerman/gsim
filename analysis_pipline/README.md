@@ -1,4 +1,4 @@
-####Benchmark scripts.
+#### Benchmark scripts.
 
 angsd\_benchmark.sh
 bcftools\_benchmark.sh
@@ -7,7 +7,7 @@ mapgd\_benchmark.sh
 	
 These scripts should record the amount of real and system time a program spends analyzing simulated data with 1, 2, and 4 threads.
 
-####Analysis scripts.
+#### Analysis scripts.
 
 angsd\_analysis.sh
 bcftools\_analysis.sh
@@ -29,13 +29,13 @@ vg\_analysis.sh (Not working)
 
 These scripts are called to estimate allele frequencies, f statistics, measures of pairwise relatedness, etc. from the simulated data.
 
-####Scripts that produce dot files.
+#### Scripts that produce dot files.
 
 draw\_pedigree\_focal\_indv.py
 draw\_pedigree\_focal\_pair.py
 draw\_pedigree.py
 
-####Heritability
+#### Heritability
 
 gvcblup\_gwas.sh
 gcta\_gwas\_setup.sh
@@ -44,14 +44,14 @@ plink\_gwas.sh
 
 These scripts estimate the heritability of quantitative traits in the simulated data.
 
-####Subdirectories
+#### Subdirectories
 mapgdr
 pedigree
 make\_figures
 python\_utilities
 
 
-#Unclassified
+#### Unclassified
 
 closed\_form.py
 count\_sub\_pedigree.py
