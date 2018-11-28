@@ -6,6 +6,7 @@ con = sqlite3.connect("poly.db")
 cur = con.cursor()
 
 #type, pos, A, B, BOOL 
+cur.execute("DROP TABLE IF EXISTS snps;")
 cur.execute("CREATE TABLE snps (sample INTEGER, var VARCHAR(40) );") # use your column names here
 
 parser = argparse.ArgumentParser(description='make a mutation file.')
@@ -39,7 +40,7 @@ for line in mutat_file:
 		con.commit()
 		inserts=[]
 		X=0
-	print state, len(state), N
+#	print state, len(state), N
 	for n in range (0, N):
 		if state[n][0]=='1':
 			inserts.append([n*2+0, line])

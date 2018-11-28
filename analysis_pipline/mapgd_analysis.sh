@@ -1,12 +1,21 @@
 #!/bin/bash
 
+cd ..
+source settings.sh
+cd /nfs/users/nfs_m/ma18/src/gsim/analysis_pipline
+
+samtools view -H ../sequences/seq_000${paired}${filtered}${realign}${clipped}${bwasuffix} > ../sequences/temp-header.txt
+
 name=$1
 LD_DIST=$2
 
-samtools mpileup -B ../sequences/seq*.sort.rmdup.bam -f ../sequences/$name -q 5 -Q 7 | gzip - > ../analysis_files/mpileup.txt.gz
-mapgd proview -H ../sequences/temp-header.txt -n ../sequences/name-file.txt -bs | gzip - > ../analysis_files/pro.txt.gz
+samtools mpileup -B ../sequences/*${paired}${filtered}${realign}${clipped}${bwasuffix} -f $name | gzip - > ../sequences/mpileup.txt.gz
+mapgd proview -H ../sequences/temp-header.txt -n ../sequences/name-file.txt -s | gzip - > ../sequences/pro.txt.gz
 echo "calling alleles"
-mapgd allele -i ../analysis_files/pro.txt.gz -c 1 -g 2 -e 0.0001 | mapgd filter -q 0.001 -p 10 -g 2 -N 1 | gzip - > ../analysis_files/mapgd_calls.txt.gz
+mapgd allele -i ../sequences/pro.txt.gz -c 1 -g 2 -e 0.0001 | mapgd filter -q 0.001 -p 10 -g 2 -N 1 | gzip - > ../sequences/mapgd_calls.txt.gz
+exit
+
+
 #mapgd allele -i ../analysis_files/pro.txt.gz -c 1 -g 20 -e 0.0001 | mapgd filter -q 0.001 -p 1 -g 2 -N 1 | gzip - > ../analysis_files/mapgd_calls.txt.gz
 zcat ../analysis_files/mapgd_calls.txt.gz | tail -n +6 | sed '$d' >  ../analysis_files/mapgd_calls-trim.csv
 mapgd allele -i ../analysis_files/pro.txt.gz -c 1 -g 2 -e 0.0001 | mapgd filter -q 0.01 -p 10 -g 10 -N 1 | gzip - > ../analysis_files/mapgd_calls.txt.gz

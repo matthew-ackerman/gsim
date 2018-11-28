@@ -12,12 +12,10 @@ echo $POPULATION
 
 $PED_SIM -y $STRUCTURE -f $F -N $POPULATION -1 $SAMPLE -s $SNPS -g $TIME -plnGt -k $TIME -v $VAR -e 0.005 -t > states.txt 
 
-head -2 name-file.txt > temp-file.txt
-head -3 name-file.txt | tail -n 1 | cut -d '	' -f 1$SAMPLE_NAME >> temp-file.txt
-
-tail -n 1 name-file.txt >> temp-file.txt
-
-mv temp-file.txt name-file.txt
+#head -2 name-file.txt > temp-file.txt
+#head -3 name-file.txt | tail -n 1 | cut -d '	' -f 1,$SAMPLE_NAME >> temp-file.txt
+#tail -n 1 name-file.txt >> temp-file.txt
+#mv temp-file.txt name-file.txt
 
 rm -rf pedigree.txt.gz
 	gzip pedigree.txt
@@ -27,26 +25,28 @@ case $REFTYPE in
   [S]   )
 		echo "simulating reference"
 		python reference_simulation/mutation_simulation2.py -l 24 -S $SIZE > ./sequences/reference_mutations.txt
-		python reference_simulation/mutation_simulation.py -m ./sequences/reference_mutations.txt -s ./reference_simulation/seed.fa > ./sequences/$REF
+		python reference_simulation/mutation_simulation.py -m ./sequences/reference_mutations.txt -s ./reference_simulation/seed.fa > $REF
 		;;
   [Y]   )
 		echo "using yeast chromosome IV"
-		zcat ./real_genomes/S288C_Chromosome\ IV.fsa > ./sequences/$REF
-		zcat ./real_genomes/S288C_Chromosome\ IV.fsa > ./sequences/$ASSEMBLY
+		zcat ./real_genomes/S288C_Chromosome\ IV.fsa.gz > $REF
+		zcat ./real_genomes/S288C_Chromosome\ IV.fsa.gz > $ASSEMBLY
+                zcat ./real_genomes/TruSeq.fa.gz > $adapterFile
 		;;
   [D]   )
                 echo "using dmel3R "
-                zcat ./real_genomes/dmel-3R.fa > ./sequences/$REF
-                zcat ./real_genomes/dmel-3R_2003.fa > ./sequences/$ASSEMBLY
+                zcat ./real_genomes/dmel-3R.fa.gz > $REF
+                zcat ./real_genomes/dmel-3R_2003.fa.gz > $ASSEMBLY
+                zcat ./real_genomes/TruSeq.fa.gz > $adapterFile
                 ;;
 esac
 
 
 echo "making individual genomes"
 cd variant_simulation
-bash state_to_fasta.sh ../sequences/$REF ../sequences/states.txt
+bash state_to_fasta.sh $REF ../sequences/states.txt
 cd ..
-echo "sequencing..."
+echo "simulating sequencing"
 
 rm -rf ./sequences/states.txt.gz
 gzip ./sequences/states.txt
@@ -64,23 +64,13 @@ do
 	./sequencing_simulation/art_illumina -qs -15 -qs2 -15 -ss HS25 -sam -i ./sequences/$NAME.0.fa -p -l 150 -f $COV -m 200 -s 10 -o temp.0 > /dev/null
 	./sequencing_simulation/art_illumina -qs -15 -qs2 -15 -ss HS25 -sam -i ./sequences/$NAME.1.fa -p -l 150 -f $COV -m 200 -s 10 -o temp.1 > /dev/null
 
-#	./sequencing_simulation/art_illumina -ss HS25 -sam -i ./sequences/$NAME.0.fa -p -l 150 -f $COV -m 200 -s 10 -o temp.0 > /dev/null
-#	./sequencing_simulation/art_illumina -ss HS25 -sam -i ./sequences/$NAME.1.fa -p -l 150 -f $COV -m 200 -s 10 -o temp.1 > /dev/null
-
 	rm ./sequences/$NAME.0.fa
 	rm ./sequences/$NAME.1.fa
 
-	cat temp.01.fq > ./sequences/temp.1.fq
-	cat temp.11.fq >> ./sequences/temp.1.fq
-	cat temp.02.fq > ./sequences/temp.2.fq
-	cat temp.12.fq >> ./sequences/temp.2.fq
-
-	bash ./alignment/run_mem_alignment.sh sequences/$ASSEMBLY ./sequences/temp ./sequences/$NAME $(($SAMPLE*$TIME+10#$x)) > /dev/null 2> /dev/null
-#	bash ./alignment/run_alignment.sh sequences/$REF ./sequences/temp ./sequences/$NAME $(($SAMPLE*$TIME+10#$x)) > /dev/null 2> /dev/null
-#	bash ./alignment/run_alignment.sh sequences/$REF ./sequences/temp ./sequences/$NAME $(($SAMPLE*$TIME+10#$x)) 
-
-#	mv ./sequences/temp.1.fq ./sequences/$NAME.0.fq
-#	mv ./sequences/temp.2.fq ./sequences/$NAME.1.fq
+	cat temp.01.fq | gzip - > ./sequences/$NAME${forward}.fq.gz
+	cat temp.11.fq | gzip - >> ./sequences/$NAME${forward}.fq.gz
+	cat temp.02.fq | gzip - > ./sequences/$NAME${reverse}.fq.gz
+	cat temp.12.fq | gzip - >> ./sequences/$NAME${reverse}.fq.gz
 
 	rm temp.01.fq
 	rm temp.11.fq
@@ -95,10 +85,11 @@ do
 	rm temp.0.sam
 	rm temp.1.sam
 
-	cd sequences
-	samtools index $NAME.sort.rmdup.bam
-	cd ..
-done
+done 
+
+cd variant_calling_pipeline
+bash bwa_pipeline.sh 
+cd .. 
 
 exit
 

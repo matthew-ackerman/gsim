@@ -9,7 +9,7 @@ for line in state_file:
 	if line[0]=='@':
 		continue
 	line=line.strip('\n').split('\t')
-	N=float(len(line))
+	N=float(len(line))*2
 	s=[]
 	for x in line:
 		s.append(int(x[0]) )

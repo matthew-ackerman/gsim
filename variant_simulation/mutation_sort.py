@@ -3,19 +3,26 @@ import argparse
 import os
 import csv, sqlite3
 
+print "trying to connect"
+
 con = sqlite3.connect(sys.argv[2])
 cur = con.cursor()
+
+cur.execute("DROP TABLE IF EXISTS mut;") # use your column names here
+
 cur.execute("CREATE TABLE mut (snpid INTEGER, type VARCHAR(10), locus INTEGER, arg1 INTEGER, arg2 INTEGER, arg3 VARCHAR(6), arg4 INTEGER, arg5 INTEGER, PRIMARY KEY (snpid) );") # use your column names here
 os.system("echo \" PRAGMA synchronous=OFF;\" | sqlite3 "+sys.argv[2])
 File=open(sys.argv[1])
 X=0
 SNPID=0
 inserts=[]
+#print "committing lines form file."
 for line in File:
 	line=[str(SNPID)]+line.strip('\n').split(' ')
 	SNPID+=1
 	inserts.append(line)
 	X+=1
+#	print X
 	if X==1000:
 		cur.executemany("INSERT INTO mut VALUES (?, ?, ?, ?, ?, ?, ?, ?);", inserts )
 		con.commit()
@@ -43,7 +50,7 @@ for row in rows:
 	while (len(cur.execute("SELECT locus FROM mut WHERE locus = "+str(L) ).fetchall() ) != 0) :
 		L+=1
 	cur.execute("UPDATE mut SET locus = "+str(L)+" WHERE snpid = "+str(snpid) )
-	print ("UPDATE mut SET locus = "+str(L)+" WHERE snpid = "+str(snpid) )
+#	print ("UPDATE mut SET locus = "+str(L)+" WHERE snpid = "+str(snpid) )
 		
 for row in cur.execute("SELECT * FROM mut ORDER BY locus;"):
 	#line=row[0]
