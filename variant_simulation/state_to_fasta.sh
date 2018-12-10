@@ -4,15 +4,15 @@ states=$2
 SIZE=`head -2 ../sequences/states.txt | tail -n 1 | cut -d '	' -f 1 | cut -d ':' -f 2`
 SIZE=$(($SIZE*2))
 POLY=../sequences/polymorphisms.map
-POLYDB=poly.db
+POLYDB=../sequences/poly.db
 REFSIZE=$((`tail -n +2 $1 | wc -c`-`tail -n +2 $1 | wc -l`))
 
-python mutation_simulation2.py -n $((`wc -l ../sequences/states.txt | cut -d ' ' -f 1` -3)) -l $REFSIZE -o True > temp
-python mutation_sort2.py temp $POLYDB > $POLY
+python mutation_simulation2.py -n $((`wc -l ../sequences/states.txt | cut -d ' ' -f 1` -3)) -l $REFSIZE -o True > ../sequences/temp
+python mutation_sort2.py ../sequences/temp $POLYDB > $POLY
 
-rm temp
+rm ../sequences/temp
 
-python state_to_fasta.py -N $((SIZE/2)) -s $states -m $POLY 
+python state_to_fasta.py -N $((SIZE/2)) -s $states -m $POLY -d $POLYDB
 
 for N in `seq 0 2 $((SIZE-2))` 
 do

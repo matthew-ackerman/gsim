@@ -24,7 +24,7 @@ rangestdev<-function(X, Y, steps=20, min=NULL, max=NULL)
 	for (x in 1:steps) {
 		rmeans[x,2]=means[x,2]/means[x,3] 		# E(X^2)
 		rmeans[x,3]=means[x,1]/means[x,3] 		# E(X)
-		rmeans[x,2]=sqrt(rmeans[x,2]-rmeans[x,3]^2)	# sqrt(X^2-X)
+		rmeans[x,2]=sqrt(rmeans[x,2]-rmeans[x,3]^2)/sqrt(means[x,3])	# sqrt(X^2-X)/sqrt(N)
 		rmeans[x,1]=means[x,4]/means[x,3]		# E(Y)
 	}
 	rmeans<-rmeans[complete.cases(means), ]

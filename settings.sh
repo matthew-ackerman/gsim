@@ -27,8 +27,8 @@ TIMEX=$((9*PULATION+POPULATION/2))	# Time of the change between POPULATION and P
 REF=`readlink -f ./sequences`"/reference.fa"  			# Name of the reference from which reads are simulated, this can be anything you want.
 ASSEMBLY=`readlink -f ./sequences`"/assembly.fa"			# Name of the assembly to which reads are aligned. 
 ASSEMBLYID="001"
-COV=8					# Average sequencing coverage (Poisson distributed).
-SNPS=20400				# Number of loci to simulate in pedigree_sim. This doesn't have to be the same as the actual reference genome size. 
+COV=9					# Average sequencing coverage (Poisson distributed).
+SNPS=204000				# Number of loci to simulate in pedigree_sim. This doesn't have to be the same as the actual reference genome size. 
 VAR=300
 REFTYPE='D'				# Reference types are 'Y'east, 'D'rosophila, and 'R'andom
 
@@ -68,11 +68,11 @@ assemblyName=$ASSEMBLY
 
 fastqBase=$WD
 SampleDir="" #$WD
-CloneID=KAP-00074
+CloneID=SEQ-00000
 
 #this should be different from ? if you want to simulate removing the wrong adaptors.
 adapterFile=`readlink -f ./sequences/adapters.fa`
-assemblyID=PA42_4_0
+assemblyID=CACA_0_0
 
 GENUS="Cacaradon"
 

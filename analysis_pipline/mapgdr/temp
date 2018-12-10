@@ -1,0 +1,13 @@
+source("./analysis_pipline/mapgdr/readmap.rscript")
+source("./analysis_pipline/mapgdr/sum_state.rscript")
+source("./analysis_pipline/make_figures/figures.conf")
+
+png("F_stats.png")
+par(mar=MAR2, family=FONT, font.lab=2)
+plot( v1[,1], v1[,3], type='l', ylim=c(-0.2,0.2), xlim=c(0.0,0.5), pch=20, cex.lab=LABSIZE, cex.axis = AXISSIZE, ylab=expression(paste(F[st]) ),  xlab=expression(paste("MAF") )  )
+points( v2[,1], v2[,3], type='l', col="red")
+points( v3[,1], v3[,3], type='l', col="blue")
+points( v4[,1], v4[,3], type='l', col="green")
+abline( h = 0 )
+def.off()
+#abline(h = 0.25/8 )

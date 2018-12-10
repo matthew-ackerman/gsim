@@ -12,7 +12,8 @@ LD_DIST=$2
 samtools mpileup -B ../sequences/*${paired}${filtered}${realign}${clipped}${bwasuffix} -f $name | gzip - > ../sequences/mpileup.txt.gz
 mapgd proview -H ../sequences/temp-header.txt -n ../sequences/name-file.txt -s | gzip - > ../sequences/pro.txt.gz
 echo "calling alleles"
-mapgd allele -i ../sequences/pro.txt.gz -c 1 -g 2 -e 0.0001 | mapgd filter -q 0.001 -p 10 -g 2 -N 1 | gzip - > ../sequences/mapgd_calls.txt.gz
+mapgd allele -i ../sequences/pro.txt.gz -c 1 -g 2 -e 0.0001 -b | mapgd filter -q 0.001 -p 6 -g 2 -c 300 -C 3000 | gzip - > ../sequences/mapgd_calls.txt.gz
+zcat ./mapgd_calls.txt.gz | mapgd filter -q 0.001 -p 6 -g 2 -X 0.05 | gzip - > ../sequences/mapgd_calls_p6_g2_X_0.05.txt.gz
 exit
 
 

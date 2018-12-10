@@ -1,0 +1,13 @@
+sum_state<-function(state)
+{
+	N<-dim(state$M)[2]
+	RAF<-rowSums(state$M)/(2*N)
+	MAF<-0.5-abs(RAF-0.5)
+	HWE<-RAF*(1-RAF)*2
+	H<-rowSums(state$H)/(N)
+	F<-(HWE-H)/(HWE)
+	L<-dim(state$M)[1]
+	R<-matrix( c(RAF, MAF, F), ncol=3, nrow=L)
+	r<-R[complete.cases(R), ]
+	return(r)
+}
